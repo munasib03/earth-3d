@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Earth Globe</title>
+  <style>
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    .hint {
+      position: fixed;
+      left: 12px;
+      bottom: 12px;
+      padding: 8px 10px;
+      background: rgba(0, 0, 0, 0.55);
+      color: white;
+      font-family: system-ui, sans-serif;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas></canvas>
+  <div class="hint">
+    Drag to rotate • Scroll to zoom</div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
