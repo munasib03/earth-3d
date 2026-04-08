@@ -15,16 +15,16 @@ const EARTH_RADIUS_3D = 1; // matches SphereGeometry(1, …)
 // Handpicked satellites by NORAD ID
 // Find more at: https://celestrak.org/satcat/
 const SATELLITES = [
-    { id: 25544, name: "ISS", color: 0xffdd44, size: 0.010, link: "https://en.wikipedia.org/wiki/International_Space_Station", image: "/iss.jpg", model: "/iss.glb" },
-    { id: 48274, name: "CSS (Tiangong)", color: 0xff8844, size: 0.009, link: "https://en.wikipedia.org/wiki/Tiangong_space_station", image: "/tiangong.jpg" },
+    { id: 25544, name: "ISS", color: 0xffdd44, size: 0.010, rotation: [0, 0, 0], link: "https://en.wikipedia.org/wiki/International_Space_Station", image: "/iss.jpg", model: "/iss.glb" },
+    { id: 48274, name: "CSS (Tiangong)", color: 0xff8844, size: 0.009, rotation: [0, 0, 0], link: "https://en.wikipedia.org/wiki/Tiangong_space_station", image: "/tiangong.jpg" },
     { id: 43226, name: "GOES-16", color: 0x44ddff, size: 0.007 },
-    { id: 45026, name: "GOES-18", color: 0x44ddff, size: 0.007 },
+    { id: 45026, name: "GOES-18", color: 0x44ddff, size: 0.007, link: "https://en.wikipedia.org/wiki/GOES-18", image: "/goes-18.jpg", model: "/goes.glb" },
     { id: 28654, name: "NOAA-18", color: 0x88ff88, size: 0.006 },
     { id: 33591, name: "NOAA-19", color: 0x88ff88, size: 0.006 },
     { id: 38771, name: "Suomi NPP", color: 0x88ff88, size: 0.006 },
     { id: 43013, name: "NOAA-20", color: 0x88ff88, size: 0.006, link: "https://en.wikipedia.org/wiki/NOAA-20", image: "/noaa-20.jpg" },
-    { id: 20580, name: "Hubble", color: 0xffaaff, size: 0.008, link: "https://en.wikipedia.org/wiki/Hubble_Space_Telescope", image: "/hubble.jpg", model: "/hubble.glb" },
-    { id: 39086, name: "Landsat 8", color: 0xaaffaa, size: 0.006 },
+    { id: 20580, name: "Hubble", color: 0xffaaff, size: 0.008, rotation: [Math.PI / 2, Math.PI / 2, Math.PI / 2], link: "https://en.wikipedia.org/wiki/Hubble_Space_Telescope", image: "/hubble.jpg", model: "/hubble.glb" },
+    { id: 39086, name: "Landsat 8", color: 0xaaffaa, size: 0.006, link: "https://en.wikipedia.org/wiki/Landsat_8", image: "/landsat-8.jpg", model: "/landsat-8.glb" },
     { id: 49260, name: "Landsat 9", color: 0xaaffaa, size: 0.006 },
     { id: 25994, name: "Terra", color: 0x44ffcc, size: 0.006 },
     { id: 36516, name: "TanDEM-X", color: 0xffcc44, size: 0.006 },
@@ -296,7 +296,7 @@ export async function initSatellites(scene, cam, ren) {
 
             mesh.visible = false;
             scene.add(mesh);
-            satRecords.push({ satrec, name: cfg.name, color: cfg.color, link: cfg.link, image: cfg.image });
+            satRecords.push({ satrec, name: cfg.name, color: cfg.color, link: cfg.link, image: cfg.image, rotation: cfg.rotation });
             satMeshes.push(mesh);
             console.log(`[satellites] ✓ ${cfg.name}`);
         } catch (err) {
@@ -333,10 +333,13 @@ export function updateSatellites() {
             const posFuture = geodeticToXYZ(geoFuture.latitude, geoFuture.longitude, geoFuture.height);
             satMeshes[i].lookAt(posFuture);
 
-            // IF THE ISS IS UPSIDE DOWN OR SIDEWAYS: 
-            // You can easily fix it by uncommenting and adjusting these local rotations:
-            // satMeshes[i].rotateX(Math.PI / 2);
-            // satMeshes[i].rotateY(Math.PI);
+            // Apply fine-tuning rotation if specified in config (fixes upside-down/sideways models)
+            const rot = satRecords[i].rotation;
+            if (rot) {
+                if (rot[0]) satMeshes[i].rotateX(rot[0]);
+                if (rot[1]) satMeshes[i].rotateY(rot[1]);
+                if (rot[2]) satMeshes[i].rotateZ(rot[2]);
+            }
         }
 
         satMeshes[i].visible = true;
