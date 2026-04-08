@@ -43,22 +43,37 @@ let activeIdx = -1;     // index of selected satellite
 // ─── Fetch TLE as plain text (FORMAT=TLE) and parse lines ─────────────────
 // CelesTrak TLE format returns 3 lines: name, line1, line2
 async function fetchTLE(noradId) {
-    const url = `https://celestrak.org/NORAD/elements/gp.php?CATNR=${noradId}&FORMAT=TLE`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const text = await res.text();
+    try {
+        const url = `https://celestrak.org/NORAD/elements/gp.php?CATNR=${noradId}&FORMAT=TLE`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
 
-    // Split into non-empty lines, trim whitespace
-    const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+        // Split into non-empty lines, trim whitespace
+        const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
 
-    // Expect: [name, line1, line2]
-    if (lines.length < 3) throw new Error(`Unexpected TLE response: ${text.slice(0, 80)}`);
-
-    return {
-        name: lines[0],
-        tle1: lines[1], // starts with "1 "
-        tle2: lines[2], // starts with "2 "
-    };
+        // Expect: [name, line1, line2]
+        if (lines.length >= 3) {
+            return {
+                name: lines[0],
+                tle1: lines[1], // starts with "1 "
+                tle2: lines[2]  // starts with "2 "
+            };
+        }
+        throw new Error(`Unexpected TLE response`);
+    } catch (err) {
+        console.warn(`[satellites] CelesTrak failed for ${noradId}, attempting fallback API...`);
+        // Fallback to Ivan Stanojevic's API
+        const fUrl = `https://tle.ivanstanojevic.me/api/tle/${noradId}`;
+        const fRes = await fetch(fUrl);
+        if (!fRes.ok) throw new Error(`Fallback HTTP ${fRes.status}`);
+        const data = await fRes.json();
+        return {
+            name: data.name,
+            tle1: data.line1,
+            tle2: data.line2
+        };
+    }
 }
 
 // ─── Convert geodetic → Three.js XYZ ──────────────────────────────────────
