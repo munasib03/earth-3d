@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { initSatellites, updateSatellites } from "./satellites.js";
 
 const canvas = document.querySelector("canvas");
 
@@ -27,6 +28,7 @@ scene.add(camera);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
+initSatellites(scene, camera, renderer);
 
 // One ambient light only (enough to see the night side a bit)
 scene.add(new THREE.AmbientLight(0xffffff, 0.18));
@@ -217,6 +219,7 @@ const clock = new THREE.Clock();
     earthMat.uniforms.sunDirWorld.value.copy(sunDir);
 
     controls.update();
+    updateSatellites();
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
   }
