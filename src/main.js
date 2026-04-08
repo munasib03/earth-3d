@@ -30,8 +30,13 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 initSatellites(scene, camera, renderer);
 
-// One ambient light only (enough to see the night side a bit)
-scene.add(new THREE.AmbientLight(0xffffff, 0.18));
+// ---------------- Lighting for 3D Models ----------------
+// The custom Earth shader ignores these, so they only affect the ISS and other 3D meshes.
+scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+
+// A HemisphereLight perfectly simulates bright Earth-shine (blue) from below, and starlight (white) from above
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x4488ff, 1.2);
+scene.add(hemiLight);
 
 // ---------------- Sun (visible) + Light ----------------
 const SUN_DISTANCE = 25;
