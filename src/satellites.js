@@ -17,13 +17,13 @@ const EARTH_RADIUS_3D = 1; // matches SphereGeometry(1, …)
 const SATELLITES = [
     { id: 25544, name: "ISS", color: 0xffdd44, size: 0.010, rotation: [0, 0, 0], link: "https://en.wikipedia.org/wiki/International_Space_Station", image: "/iss.jpg", model: "/iss.glb" },
     { id: 48274, name: "CSS (Tiangong)", color: 0xff8844, size: 0.009, rotation: [0, 0, 0], link: "https://en.wikipedia.org/wiki/Tiangong_space_station", image: "/tiangong.jpg" },
-    { id: 43226, name: "GOES-16", color: 0x44ddff, size: 0.007 },
+    { id: 43226, name: "GOES-16", color: 0x44ddff, size: 0.007, link: "https://en.wikipedia.org/wiki/GOES-16", image: "/goes-16.jpg", model: "/goes.glb" },
     { id: 45026, name: "GOES-18", color: 0x44ddff, size: 0.007, link: "https://en.wikipedia.org/wiki/GOES-18", image: "/goes-18.jpg", model: "/goes.glb" },
     { id: 28654, name: "NOAA-18", color: 0x88ff88, size: 0.006 },
     { id: 33591, name: "NOAA-19", color: 0x88ff88, size: 0.006 },
     { id: 38771, name: "Suomi NPP", color: 0x88ff88, size: 0.006 },
     { id: 43013, name: "NOAA-20", color: 0x88ff88, size: 0.006, link: "https://en.wikipedia.org/wiki/NOAA-20", image: "/noaa-20.jpg" },
-    { id: 20580, name: "Hubble", color: 0xffaaff, size: 0.008, rotation: [Math.PI / 2, Math.PI / 2, Math.PI / 2], link: "https://en.wikipedia.org/wiki/Hubble_Space_Telescope", image: "/hubble.jpg", model: "/hubble.glb" },
+    { id: 20580, name: "Hubble", color: 0xffaaff, size: 0.008, rotation: [Math.PI / 2, Math.PI / 2, Math.PI / 2], link: "https://en.wikipedia.org/wiki/Hubble_Space_Telescope", image: "/hubble.jpg", model: "/hubble.glb", liveLink: "https://spacetelescopelive.org/hubble?obsId=01KN9MCWM3VB8DVW9172KFJ9NR", liveLinkLabel: "See what Hubble is observing right now" },
     { id: 39086, name: "Landsat 8", color: 0xaaffaa, size: 0.006, link: "https://en.wikipedia.org/wiki/Landsat_8", image: "/landsat-8.jpg", model: "/landsat-8.glb" },
     { id: 49260, name: "Landsat 9", color: 0xaaffaa, size: 0.006 },
     { id: 25994, name: "Terra", color: 0x44ffcc, size: 0.006 },
@@ -39,6 +39,28 @@ const satRecords = [];
 const satMeshes = [];
 let activeLine = null;   // currently displayed orbit line
 let activeIdx = -1;     // index of selected satellite
+
+let liveCrewData = { ISS: [], CSS: [] };
+
+async function fetchDynamicCrew() {
+    try {
+        const res = await fetch("https://corquaid.github.io/international-space-station-APIs/JSON/people-in-space.json");
+        const data = await res.json();
+
+        for (const person of data.people) {
+            if (person.iss === true) {
+                liveCrewData.ISS.push(person.name);
+            } else if (person.spacecraft && (person.spacecraft.toLowerCase().includes("shenzhou") || person.spacecraft.toLowerCase().includes("tiangong"))) {
+                liveCrewData.CSS.push(person.name);
+            }
+        }
+        console.log("[satellites] Dynamically fetched crew:");
+        console.log("ISS:", liveCrewData.ISS);
+        console.log("CSS:", liveCrewData.CSS);
+    } catch (e) {
+        console.warn("[satellites] Failed to dynamically fetch crew:", e);
+    }
+}
 
 // ─── Fetch TLE as plain text (FORMAT=TLE) and parse lines ─────────────────
 // CelesTrak TLE format returns 3 lines: name, line1, line2
@@ -237,6 +259,7 @@ function setupHover(scene, cam, ren) {
 // ─── Public: init ──────────────────────────────────────────────────────────
 export async function initSatellites(scene, cam, ren) {
     console.log(`[satellites] Fetching ${SATELLITES.length} satellites…`);
+    await fetchDynamicCrew();
 
     // Map to hold loaded 3D models
     const loadedModels = {};
@@ -296,7 +319,8 @@ export async function initSatellites(scene, cam, ren) {
 
             mesh.visible = false;
             scene.add(mesh);
-            satRecords.push({ satrec, name: cfg.name, color: cfg.color, link: cfg.link, image: cfg.image, rotation: cfg.rotation });
+            const resolvedCrew = cfg.name === "ISS" ? liveCrewData.ISS : (cfg.name === "CSS (Tiangong)" ? liveCrewData.CSS : cfg.crew);
+            satRecords.push({ satrec, name: cfg.name, color: cfg.color, link: cfg.link, image: cfg.image, rotation: cfg.rotation, liveLink: cfg.liveLink, liveLinkLabel: cfg.liveLinkLabel, crew: resolvedCrew });
             satMeshes.push(mesh);
             console.log(`[satellites] ✓ ${cfg.name}`);
         } catch (err) {
@@ -360,6 +384,8 @@ let velEl = null;
 let latLngEl = null;
 let imgEl = null;
 let linkEl = null;
+let liveLinkEl = null;
+let crewContainerEl = null;
 
 function ensureInfoPanel() {
     if (panelEl) return;
@@ -469,9 +495,47 @@ function ensureInfoPanel() {
     statsContainer.appendChild(velRow.row);
     statsContainer.appendChild(coordsRow.row);
 
+    liveLinkEl = document.createElement("a");
+    Object.assign(liveLinkEl.style, {
+        color: "#ffaaff",
+        fontSize: "13px",
+        textDecoration: "none",
+        display: "none",
+        background: "rgba(255, 170, 255, 0.1)",
+        padding: "8px 12px",
+        borderRadius: "6px",
+        fontWeight: "500",
+        textAlign: "center",
+        marginTop: "12px",
+        border: "1px solid rgba(255, 170, 255, 0.2)",
+        transition: "background 0.2s, transform 0.2s"
+    });
+    liveLinkEl.target = "_blank";
+
+    // Add hover effect
+    liveLinkEl.addEventListener("mouseenter", () => {
+        liveLinkEl.style.background = "rgba(255, 170, 255, 0.25)";
+        liveLinkEl.style.transform = "translateY(-1px)";
+    });
+    liveLinkEl.addEventListener("mouseleave", () => {
+        liveLinkEl.style.background = "rgba(255, 170, 255, 0.1)";
+        liveLinkEl.style.transform = "translateY(0)";
+    });
+
+    statsContainer.appendChild(liveLinkEl);
+
+    crewContainerEl = document.createElement("div");
+    Object.assign(crewContainerEl.style, {
+        marginTop: "16px",
+        display: "none",
+        borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+        paddingTop: "12px",
+    });
+
     panelEl.appendChild(headerRow);
     panelEl.appendChild(imgEl);
     panelEl.appendChild(statsContainer);
+    panelEl.appendChild(crewContainerEl);
     document.body.appendChild(panelEl);
 }
 
@@ -514,6 +578,45 @@ function updateInfoPanel(now, gmst) {
         linkEl.style.display = "block";
     } else {
         linkEl.style.display = "none";
+    }
+
+    if (rec.liveLink && rec.liveLinkLabel) {
+        liveLinkEl.href = rec.liveLink;
+        liveLinkEl.textContent = rec.liveLinkLabel + " ↗";
+        liveLinkEl.style.display = "block";
+    } else {
+        liveLinkEl.style.display = "none";
+    }
+
+    if (rec.crew && rec.crew.length > 0) {
+        crewContainerEl.innerHTML = "";
+        const crewHeader = document.createElement("div");
+        crewHeader.textContent = "Crew on board:";
+        crewHeader.style.color = "rgba(255, 255, 255, 0.55)";
+        crewHeader.style.marginBottom = "8px";
+        crewHeader.style.fontSize = "13px";
+        crewContainerEl.appendChild(crewHeader);
+
+        const crewList = document.createElement("div");
+        crewList.style.display = "flex";
+        crewList.style.flexDirection = "column";
+        crewList.style.gap = "4px";
+
+        rec.crew.forEach(person => {
+            const row = document.createElement("div");
+            row.style.fontSize = "14px";
+            row.style.fontWeight = "400";
+            row.style.display = "flex";
+            row.style.alignItems = "center";
+            row.style.gap = "8px";
+            row.innerHTML = `<span style="color: #44ddff; font-size: 10px;">👤</span> ${person}`;
+            crewList.appendChild(row);
+        });
+
+        crewContainerEl.appendChild(crewList);
+        crewContainerEl.style.display = "block";
+    } else {
+        crewContainerEl.style.display = "none";
     }
 
     // Conditionally show custom Image
