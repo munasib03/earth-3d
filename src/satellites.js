@@ -19,15 +19,16 @@ const SATELLITES = [
     { id: 48274, name: "CSS (Tiangong)", color: 0xff8844, size: 0.009, rotation: [0, 0, 0], link: "https://en.wikipedia.org/wiki/Tiangong_space_station", image: "/tiangong.jpg" },
     { id: 43226, name: "GOES-16", color: 0x44ddff, size: 0.007, link: "https://en.wikipedia.org/wiki/GOES-16", image: "/goes-16.jpg", model: "/goes.glb" },
     { id: 45026, name: "GOES-18", color: 0x44ddff, size: 0.007, link: "https://en.wikipedia.org/wiki/GOES-18", image: "/goes-18.jpg", model: "/goes.glb" },
-    { id: 28654, name: "NOAA-18", color: 0x88ff88, size: 0.006 },
-    { id: 33591, name: "NOAA-19", color: 0x88ff88, size: 0.006 },
+    { id: 28654, name: "NOAA-18", color: 0x88ff88, size: 0.006, link: "https://en.wikipedia.org/wiki/NOAA-18", image: "/noaa-18.jpg", model: "/poes.glb" },
+    { id: 33591, name: "NOAA-19", color: 0x88ff88, size: 0.006, link: "https://en.wikipedia.org/wiki/NOAA-19", image: "/noaa-19.jpg", model: "/poes.glb" },
     { id: 38771, name: "Suomi NPP", color: 0x88ff88, size: 0.006, link: "https://en.wikipedia.org/wiki/Suomi_NPP", image: "/suomi-npp.jpg", model: "/suomi-npp.glb" },
     { id: 43013, name: "NOAA-20", color: 0x88ff88, size: 0.006, link: "https://en.wikipedia.org/wiki/NOAA-20", image: "/noaa-20.jpg" },
     { id: 20580, name: "Hubble", color: 0xffaaff, size: 0.008, rotation: [Math.PI / 2, Math.PI / 2, Math.PI / 2], link: "https://en.wikipedia.org/wiki/Hubble_Space_Telescope", image: "/hubble.jpg", model: "/hubble.glb", liveLink: "https://spacetelescopelive.org/hubble?obsId=01KN9MCWM3VB8DVW9172KFJ9NR", liveLinkLabel: "See what Hubble is observing right now" },
     { id: 39086, name: "Landsat 8", color: 0xaaffaa, size: 0.006, link: "https://en.wikipedia.org/wiki/Landsat_8", image: "/landsat-8.jpg", model: "/landsat-8.glb" },
-    { id: 49260, name: "Landsat 9", color: 0xaaffaa, size: 0.006 },
-    { id: 25994, name: "Terra", color: 0x44ffcc, size: 0.006 },
-    { id: 36516, name: "TanDEM-X", color: 0xffcc44, size: 0.006 },
+    { id: 49260, name: "Landsat 9", color: 0xaaffaa, size: 0.006, link: "https://en.wikipedia.org/wiki/Landsat_9", image: "/landsat-9.jpg" },
+    { id: 25994, name: "Terra", color: 0x44ffcc, size: 0.006, link: "https://en.wikipedia.org/wiki/Terra_(satellite)", image: "/terra.jpg", model: "/terra.glb" },
+    { id: 29108, name: "CALIPSO", color: 0xbb88ff, size: 0.006, link: "https://en.wikipedia.org/wiki/CALIPSO", image: "/calipso.jpg", model: "/calipso.glb" },
+    { id: 36516, name: "TanDEM-X", color: 0xffcc44, size: 0.006, link: "https://en.wikipedia.org/wiki/TanDEM-X", image: "/tandem-x.jpg" },
     // ── Radar / SAR ──────────────────────────────────────────────────────────
     { id: 32382, name: "RADARSAT-2", color: 0xff6633, size: 0.006, link: "https://en.wikipedia.org/wiki/Radarsat-2", image: "/radarsat-2.jpg", model: "/radarsat-2.glb" },
     // ── Altimetry ────────────────────────────────────────────────────────────
@@ -36,6 +37,14 @@ const SATELLITES = [
     { id: 39070, name: "TDRS-11", color: 0xffcc00, size: 0.007, link: "https://en.wikipedia.org/wiki/Tracking_and_Data_Relay_Satellite", image: "/tdrs.jpg", model: "/tdrs.glb" },
     { id: 39504, name: "TDRS-12", color: 0xffcc00, size: 0.007, link: "https://en.wikipedia.org/wiki/Tracking_and_Data_Relay_Satellite", image: "/tdrs.jpg", model: "/tdrs.glb" },
     { id: 42915, name: "TDRS-13", color: 0xffcc00, size: 0.007, link: "https://en.wikipedia.org/wiki/Tracking_and_Data_Relay_Satellite", image: "/tdrs.jpg", model: "/tdrs.glb" },
+    // ── CYGNSS Constellation (GPS reflectometry for hurricane wind speeds) ───
+    { id: 41887, name: "CYGNSS FM-01", color: 0x00ffcc, size: 0.005, link: "https://en.wikipedia.org/wiki/CYGNSS", image: "/cygnss.jpg", model: "/cygnss.glb" },
+    { id: 41886, name: "CYGNSS FM-02", color: 0x00ffcc, size: 0.005, link: "https://en.wikipedia.org/wiki/CYGNSS", image: "/cygnss.jpg", model: "/cygnss.glb" },
+    { id: 41891, name: "CYGNSS FM-03", color: 0x00ffcc, size: 0.005, link: "https://en.wikipedia.org/wiki/CYGNSS", image: "/cygnss.jpg", model: "/cygnss.glb" },
+    { id: 41885, name: "CYGNSS FM-04", color: 0x00ffcc, size: 0.005, link: "https://en.wikipedia.org/wiki/CYGNSS", image: "/cygnss.jpg", model: "/cygnss.glb" },
+    { id: 41884, name: "CYGNSS FM-05", color: 0x00ffcc, size: 0.005, link: "https://en.wikipedia.org/wiki/CYGNSS", image: "/cygnss.jpg", model: "/cygnss.glb" },
+    { id: 41890, name: "CYGNSS FM-07", color: 0x00ffcc, size: 0.005, link: "https://en.wikipedia.org/wiki/CYGNSS", image: "/cygnss.jpg", model: "/cygnss.glb" },
+    { id: 41888, name: "CYGNSS FM-08", color: 0x00ffcc, size: 0.005, link: "https://en.wikipedia.org/wiki/CYGNSS", image: "/cygnss.jpg", model: "/cygnss.glb" },
 ];
 
 // ─── Orbit path config ─────────────────────────────────────────────────────
