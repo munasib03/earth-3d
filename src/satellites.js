@@ -21,13 +21,21 @@ const SATELLITES = [
     { id: 45026, name: "GOES-18", color: 0x44ddff, size: 0.007, link: "https://en.wikipedia.org/wiki/GOES-18", image: "/goes-18.jpg", model: "/goes.glb" },
     { id: 28654, name: "NOAA-18", color: 0x88ff88, size: 0.006 },
     { id: 33591, name: "NOAA-19", color: 0x88ff88, size: 0.006 },
-    { id: 38771, name: "Suomi NPP", color: 0x88ff88, size: 0.006 },
+    { id: 38771, name: "Suomi NPP", color: 0x88ff88, size: 0.006, link: "https://en.wikipedia.org/wiki/Suomi_NPP", image: "/suomi-npp.jpg", model: "/suomi-npp.glb" },
     { id: 43013, name: "NOAA-20", color: 0x88ff88, size: 0.006, link: "https://en.wikipedia.org/wiki/NOAA-20", image: "/noaa-20.jpg" },
     { id: 20580, name: "Hubble", color: 0xffaaff, size: 0.008, rotation: [Math.PI / 2, Math.PI / 2, Math.PI / 2], link: "https://en.wikipedia.org/wiki/Hubble_Space_Telescope", image: "/hubble.jpg", model: "/hubble.glb", liveLink: "https://spacetelescopelive.org/hubble?obsId=01KN9MCWM3VB8DVW9172KFJ9NR", liveLinkLabel: "See what Hubble is observing right now" },
     { id: 39086, name: "Landsat 8", color: 0xaaffaa, size: 0.006, link: "https://en.wikipedia.org/wiki/Landsat_8", image: "/landsat-8.jpg", model: "/landsat-8.glb" },
     { id: 49260, name: "Landsat 9", color: 0xaaffaa, size: 0.006 },
     { id: 25994, name: "Terra", color: 0x44ffcc, size: 0.006 },
     { id: 36516, name: "TanDEM-X", color: 0xffcc44, size: 0.006 },
+    // ── Radar / SAR ──────────────────────────────────────────────────────────
+    { id: 32382, name: "RADARSAT-2", color: 0xff6633, size: 0.006, link: "https://en.wikipedia.org/wiki/Radarsat-2", image: "/radarsat-2.jpg", model: "/radarsat-2.glb" },
+    // ── Altimetry ────────────────────────────────────────────────────────────
+    { id: 43613, name: "ICESat-2", color: 0x66eeff, size: 0.006, link: "https://en.wikipedia.org/wiki/ICESat-2", image: "/icesat-2.jpg", model: "/icesat-2.glb" },
+    // ── TDRS (Tracking & Data Relay — GEO) ───────────────────────────────────
+    { id: 39070, name: "TDRS-11", color: 0xffcc00, size: 0.007, link: "https://en.wikipedia.org/wiki/Tracking_and_Data_Relay_Satellite", image: "/tdrs.jpg", model: "/tdrs.glb" },
+    { id: 39504, name: "TDRS-12", color: 0xffcc00, size: 0.007, link: "https://en.wikipedia.org/wiki/Tracking_and_Data_Relay_Satellite", image: "/tdrs.jpg", model: "/tdrs.glb" },
+    { id: 42915, name: "TDRS-13", color: 0xffcc00, size: 0.007, link: "https://en.wikipedia.org/wiki/Tracking_and_Data_Relay_Satellite", image: "/tdrs.jpg", model: "/tdrs.glb" },
 ];
 
 // ─── Orbit path config ─────────────────────────────────────────────────────
