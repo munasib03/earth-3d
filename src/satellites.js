@@ -14,6 +14,7 @@ const EARTH_RADIUS_3D = 1; // matches SphereGeometry(1, …)
 
 // Handpicked satellites by NORAD ID
 // Find more at: https://celestrak.org/satcat/
+// rotation: [x, y, z] in radians, or [pitch, yaw, roll] in radians
 const SATELLITES = [
     { id: 25544, name: "ISS", color: 0xffdd44, size: 0.010, rotation: [0, 0, 0], link: "https://en.wikipedia.org/wiki/International_Space_Station", image: "/iss.jpg", model: "/iss.glb" },
     { id: 48274, name: "CSS (Tiangong)", color: 0xff8844, size: 0.009, rotation: [0, 0, 0], link: "https://en.wikipedia.org/wiki/Tiangong_space_station", image: "/tiangong.jpg" },
@@ -38,13 +39,25 @@ const SATELLITES = [
     { id: 39504, name: "TDRS-12", color: 0xffcc00, size: 0.007, link: "https://en.wikipedia.org/wiki/Tracking_and_Data_Relay_Satellite", image: "/tdrs.jpg", model: "/tdrs.glb" },
     { id: 42915, name: "TDRS-13", color: 0xffcc00, size: 0.007, link: "https://en.wikipedia.org/wiki/Tracking_and_Data_Relay_Satellite", image: "/tdrs.jpg", model: "/tdrs.glb" },
     // ── CYGNSS Constellation (GPS reflectometry for hurricane wind speeds) ───
-    { id: 41887, name: "CYGNSS FM-01", color: 0x00ffcc, size: 0.005, link: "https://en.wikipedia.org/wiki/CYGNSS", image: "/cygnss.jpg", model: "/cygnss.glb" },
-    { id: 41886, name: "CYGNSS FM-02", color: 0x00ffcc, size: 0.005, link: "https://en.wikipedia.org/wiki/CYGNSS", image: "/cygnss.jpg", model: "/cygnss.glb" },
-    { id: 41891, name: "CYGNSS FM-03", color: 0x00ffcc, size: 0.005, link: "https://en.wikipedia.org/wiki/CYGNSS", image: "/cygnss.jpg", model: "/cygnss.glb" },
-    { id: 41885, name: "CYGNSS FM-04", color: 0x00ffcc, size: 0.005, link: "https://en.wikipedia.org/wiki/CYGNSS", image: "/cygnss.jpg", model: "/cygnss.glb" },
-    { id: 41884, name: "CYGNSS FM-05", color: 0x00ffcc, size: 0.005, link: "https://en.wikipedia.org/wiki/CYGNSS", image: "/cygnss.jpg", model: "/cygnss.glb" },
-    { id: 41890, name: "CYGNSS FM-07", color: 0x00ffcc, size: 0.005, link: "https://en.wikipedia.org/wiki/CYGNSS", image: "/cygnss.jpg", model: "/cygnss.glb" },
-    { id: 41888, name: "CYGNSS FM-08", color: 0x00ffcc, size: 0.005, link: "https://en.wikipedia.org/wiki/CYGNSS", image: "/cygnss.jpg", model: "/cygnss.glb" },
+    { id: 41887, name: "CYGNSS FM-01", color: 0x00ffcc, size: 0.005, rotation: [Math.PI / 2, 0, 0], link: "https://en.wikipedia.org/wiki/CYGNSS", image: "/cygnss.jpg", model: "/cygnss.glb" },
+    { id: 41886, name: "CYGNSS FM-02", color: 0x00ffcc, size: 0.005, rotation: [Math.PI / 2, 0, 0], link: "https://en.wikipedia.org/wiki/CYGNSS", image: "/cygnss.jpg", model: "/cygnss.glb" },
+    { id: 41891, name: "CYGNSS FM-03", color: 0x00ffcc, size: 0.005, rotation: [Math.PI / 2, 0, 0], link: "https://en.wikipedia.org/wiki/CYGNSS", image: "/cygnss.jpg", model: "/cygnss.glb" },
+    { id: 41885, name: "CYGNSS FM-04", color: 0x00ffcc, size: 0.005, rotation: [Math.PI / 2, 0, 0], link: "https://en.wikipedia.org/wiki/CYGNSS", image: "/cygnss.jpg", model: "/cygnss.glb" },
+    { id: 41884, name: "CYGNSS FM-05", color: 0x00ffcc, size: 0.005, rotation: [Math.PI / 2, 0, 0], link: "https://en.wikipedia.org/wiki/CYGNSS", image: "/cygnss.jpg", model: "/cygnss.glb" },
+    { id: 41890, name: "CYGNSS FM-07", color: 0x00ffcc, size: 0.005, rotation: [Math.PI / 2, 0, 0], link: "https://en.wikipedia.org/wiki/CYGNSS", image: "/cygnss.jpg", model: "/cygnss.glb" },
+    { id: 41888, name: "CYGNSS FM-08", color: 0x00ffcc, size: 0.005, rotation: [Math.PI / 2, 0, 0], link: "https://en.wikipedia.org/wiki/CYGNSS", image: "/cygnss.jpg", model: "/cygnss.glb" },
+    // ── ESA Sentinel (Copernicus Earth Observation) ──────────────────────────
+    { id: 39634, name: "Sentinel-1A", color: 0xff9944, size: 0.006, link: "https://en.wikipedia.org/wiki/Sentinel-1", image: "/sentinel-1a.jpg" },
+    { id: 40697, name: "Sentinel-2A", color: 0x44aaff, size: 0.006, link: "https://en.wikipedia.org/wiki/Sentinel-2", image: "/sentinel-2a.jpg" },
+    { id: 42063, name: "Sentinel-2B", color: 0x44aaff, size: 0.006, link: "https://en.wikipedia.org/wiki/Sentinel-2", image: "/sentinel-2b.jpg" },
+    // ── Ocean / Ice Altimetry ────────────────────────────────────────────────
+    { id: 41240, name: "Jason-3", color: 0x4488ff, size: 0.006, link: "https://en.wikipedia.org/wiki/Jason-3", image: "/jason-3.jpg" },
+    { id: 36508, name: "CryoSat-2", color: 0xaaddff, size: 0.006, link: "https://en.wikipedia.org/wiki/CryoSat-2", image: "/cryosat-2.jpg" },
+    // ── Weather / Atmosphere ─────────────────────────────────────────────────
+    { id: 43689, name: "MetOp-C", color: 0x88ffdd, size: 0.006, link: "https://en.wikipedia.org/wiki/MetOp", image: "/metop.jpg" },
+    { id: 29107, name: "CloudSat", color: 0xccccff, size: 0.006, link: "https://en.wikipedia.org/wiki/CloudSat", image: "/cloudsat.jpg" },
+    // ── SAR ──────────────────────────────────────────────────────────────────
+    { id: 43641, name: "SAOCOM-1A", color: 0xff6644, size: 0.006, link: "https://en.wikipedia.org/wiki/SAOCOM", image: "/saocom-1a.jpg" },
 ];
 
 // ─── Orbit path config ─────────────────────────────────────────────────────
@@ -116,15 +129,21 @@ async function fetchTLE(noradId) {
 }
 
 // ─── Convert geodetic → Three.js XYZ ──────────────────────────────────────
-function geodeticToXYZ(latRad, lngRad, altKm) {
+// Pre-allocated reusable vectors to avoid GC pressure every frame
+const _posVec = new THREE.Vector3();
+const _futureVec = new THREE.Vector3();
+
+function geodeticToXYZ(latRad, lngRad, altKm, target) {
     const r = EARTH_RADIUS_3D + (altKm / EARTH_RADIUS_KM) * EARTH_RADIUS_3D;
     const phi = Math.PI / 2 - latRad;
     const theta = lngRad + Math.PI;
-    return new THREE.Vector3(
+    const v = target || new THREE.Vector3();
+    v.set(
         -r * Math.sin(phi) * Math.cos(theta),
         r * Math.cos(phi),
         r * Math.sin(phi) * Math.sin(theta)
     );
+    return v;
 }
 
 // ─── Orbit path drawing ────────────────────────────────────────────────────
@@ -350,9 +369,21 @@ export async function initSatellites(scene, cam, ren) {
 }
 
 // ─── Public: call every frame in animate() ────────────────────────────────
+let _frameCount = 0;
+
 export function updateSatellites() {
+    _frameCount++;
     const now = new Date();
+    const nowMs = now.getTime();
     const gmst = satellite.gstime(now);
+
+    // Compute look-ahead time & gmst once, reused for all satellites
+    const doOrientation = (_frameCount % 10 === 0); // only update heading every 10 frames
+    let tFuture, gmstFuture;
+    if (doOrientation) {
+        tFuture = new Date(nowMs + 10000); // 10 s look-ahead (smoother at lower update rate)
+        gmstFuture = satellite.gstime(tFuture);
+    }
 
     for (let i = 0; i < satRecords.length; i++) {
         const pv = satellite.propagate(satRecords[i].satrec, now);
@@ -363,23 +394,37 @@ export function updateSatellites() {
         }
 
         const geo = satellite.eciToGeodetic(pv.position, gmst);
-        const pos = geodeticToXYZ(geo.latitude, geo.longitude, geo.height);
-        satMeshes[i].position.copy(pos);
+        geodeticToXYZ(geo.latitude, geo.longitude, geo.height, _posVec);
+        satMeshes[i].position.copy(_posVec);
 
-        // Dynamically orient to face the direction of flight
-        const tFuture = new Date(now.getTime() + 1000); // 1 second in the future
-        const pvFuture = satellite.propagate(satRecords[i].satrec, tFuture);
-        if (pvFuture && typeof pvFuture.position === "object" && pvFuture.position !== false) {
-            const geoFuture = satellite.eciToGeodetic(pvFuture.position, satellite.gstime(tFuture));
-            const posFuture = geodeticToXYZ(geoFuture.latitude, geoFuture.longitude, geoFuture.height);
-            satMeshes[i].lookAt(posFuture);
+        // Only update heading every 10 frames — imperceptible at 60fps
+        if (doOrientation) {
+            const pvFuture = satellite.propagate(satRecords[i].satrec, tFuture);
+            if (pvFuture && typeof pvFuture.position === "object" && pvFuture.position !== false) {
+                const geoFuture = satellite.eciToGeodetic(pvFuture.position, gmstFuture);
+                geodeticToXYZ(geoFuture.latitude, geoFuture.longitude, geoFuture.height, _futureVec);
 
-            // Apply fine-tuning rotation if specified in config (fixes upside-down/sideways models)
-            const rot = satRecords[i].rotation;
-            if (rot) {
-                if (rot[0]) satMeshes[i].rotateX(rot[0]);
-                if (rot[1]) satMeshes[i].rotateY(rot[1]);
-                if (rot[2]) satMeshes[i].rotateZ(rot[2]);
+                // Nadir-locked orientation:
+                // forward = direction of travel (+Z)
+                // up = away from Earth center (so bottom always faces Earth)
+                const forward = _futureVec.clone().sub(satMeshes[i].position).normalize();
+                const nadirUp = satMeshes[i].position.clone().normalize(); // away from Earth center
+
+                // Build orthonormal basis: right = forward × nadirUp, then recalculate true up
+                const right = forward.clone().cross(nadirUp).normalize();
+                const up = right.clone().cross(forward).normalize();
+
+                // Build rotation matrix from basis vectors, then set quaternion
+                const m = new THREE.Matrix4().makeBasis(right, up, forward.negate());
+                satMeshes[i].quaternion.setFromRotationMatrix(m);
+
+                // Apply model-specific fine-tune rotation offset
+                const rot = satRecords[i].rotation;
+                if (rot) {
+                    if (rot[0]) satMeshes[i].rotateX(rot[0]);
+                    if (rot[1]) satMeshes[i].rotateY(rot[1]);
+                    if (rot[2]) satMeshes[i].rotateZ(rot[2]);
+                }
             }
         }
 
@@ -390,7 +435,10 @@ export function updateSatellites() {
         activeLine.material.resolution.set(window.innerWidth, window.innerHeight);
     }
 
-    updateInfoPanel(now, gmst);
+    // Only update the info panel every 3 frames — the text reads fine at 20fps
+    if (_frameCount % 3 === 0) {
+        updateInfoPanel(now, gmst);
+    }
 }
 
 // ─── Info Panel ────────────────────────────────────────────────────────────
