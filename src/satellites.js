@@ -17,7 +17,7 @@ const EARTH_RADIUS_3D = 1; // matches SphereGeometry(1, …)
 // rotation: [x, y, z] in radians, or [pitch, yaw, roll] in radians
 const SATELLITES = [
     { id: 25544, name: "ISS", color: 0xffdd44, size: 0.010, rotation: [0, 0, 0], link: "https://en.wikipedia.org/wiki/International_Space_Station", image: "/iss.jpg", model: "/iss.glb" },
-    { id: 48274, name: "CSS (Tiangong)", color: 0xff8844, size: 0.009, rotation: [0, 0, 0], link: "https://en.wikipedia.org/wiki/Tiangong_space_station", image: "/tiangong.jpg" },
+    { id: 48274, name: "CSS (Tiangong)", color: 0xff8844, size: 0.009, rotation: [0, 0, 0], link: "https://en.wikipedia.org/wiki/Tiangong_space_station", image: "/tiangong.jpg", model: "/tiangong.glb" },
     { id: 43226, name: "GOES-16", color: 0x44ddff, size: 0.007, link: "https://en.wikipedia.org/wiki/GOES-16", image: "/goes-16.jpg", model: "/goes.glb" },
     { id: 45026, name: "GOES-18", color: 0x44ddff, size: 0.007, link: "https://en.wikipedia.org/wiki/GOES-18", image: "/goes-18.jpg", model: "/goes.glb" },
     { id: 28654, name: "NOAA-18", color: 0x88ff88, size: 0.006, link: "https://en.wikipedia.org/wiki/NOAA-18", image: "/noaa-18.jpg", model: "/poes.glb" },
@@ -49,15 +49,19 @@ const SATELLITES = [
     // ── ESA Sentinel (Copernicus Earth Observation) ──────────────────────────
     { id: 39634, name: "Sentinel-1A", color: 0xff9944, size: 0.006, link: "https://en.wikipedia.org/wiki/Sentinel-1", image: "/sentinel-1a.jpg" },
     { id: 40697, name: "Sentinel-2A", color: 0x44aaff, size: 0.006, link: "https://en.wikipedia.org/wiki/Sentinel-2", image: "/sentinel-2a.jpg" },
-    { id: 42063, name: "Sentinel-2B", color: 0x44aaff, size: 0.006, link: "https://en.wikipedia.org/wiki/Sentinel-2", image: "/sentinel-2b.jpg" },
+    { id: 42063, name: "Sentinel-2B", color: 0x44aaff, size: 0.006, link: "https://en.wikipedia.org/wiki/Sentinel-2", image: "/sentinel-2b.jpg", model: "/sentinel-2b.glb" },
     // ── Ocean / Ice Altimetry ────────────────────────────────────────────────
     { id: 41240, name: "Jason-3", color: 0x4488ff, size: 0.006, link: "https://en.wikipedia.org/wiki/Jason-3", image: "/jason-3.jpg" },
     { id: 36508, name: "CryoSat-2", color: 0xaaddff, size: 0.006, link: "https://en.wikipedia.org/wiki/CryoSat-2", image: "/cryosat-2.jpg" },
     // ── Weather / Atmosphere ─────────────────────────────────────────────────
     { id: 43689, name: "MetOp-C", color: 0x88ffdd, size: 0.006, link: "https://en.wikipedia.org/wiki/MetOp", image: "/metop.jpg" },
     { id: 29107, name: "CloudSat", color: 0xccccff, size: 0.006, link: "https://en.wikipedia.org/wiki/CloudSat", image: "/cloudsat.jpg" },
-    // ── SAR ──────────────────────────────────────────────────────────────────
+    // ── SAR (Synthetic Aperture Radar) ───────────────────────────────────────
+    { id: 39766, name: "ALOS-2 (DAICHI-2)", color: 0xff88aa, size: 0.006, link: "https://en.wikipedia.org/wiki/ALOS-2", image: "/alos-2.jpg" },
+    { id: 60182, name: "ALOS-4 (DAICHI-4)", color: 0xff88aa, size: 0.006, link: "https://en.wikipedia.org/wiki/ALOS-4", image: "/alos-4.jpg" },
     { id: 43641, name: "SAOCOM-1A", color: 0xff6644, size: 0.006, link: "https://en.wikipedia.org/wiki/SAOCOM", image: "/saocom-1a.jpg" },
+    // ── Constellations (Group) ───────────────────────────────────────────────
+    { group: "iridium-NEXT", color: 0xcc44ff, size: 0.005, link: "https://en.wikipedia.org/wiki/Iridium_satellite_constellation", image: "/iridium.jpg" }
 ];
 
 // ─── Orbit path config ─────────────────────────────────────────────────────
@@ -126,6 +130,27 @@ async function fetchTLE(noradId) {
             tle2: data.line2
         };
     }
+}
+
+// ─── Fetch Group TLE ──────────────────────────────────────────────────────
+async function fetchGroupTLE(groupName) {
+    const url = `https://celestrak.org/NORAD/elements/gp.php?GROUP=${groupName}&FORMAT=TLE`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+
+    const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+    const tles = [];
+    for (let i = 0; i < lines.length; i += 3) {
+        if (lines[i] && lines[i + 1] && lines[i + 2]) {
+            tles.push({
+                name: lines[i],
+                tle1: lines[i + 1],
+                tle2: lines[i + 2]
+            });
+        }
+    }
+    return tles;
 }
 
 // ─── Convert geodetic → Three.js XYZ ──────────────────────────────────────
@@ -313,6 +338,15 @@ export async function initSatellites(scene, cam, ren) {
             const gltf = await loader.loadAsync(url);
             const model = gltf.scene;
 
+            // Normalize overly metallic/dark materials so they reflect standard scene lighting 
+            // instead of requiring an expensive HDRI environment map to be visible.
+            model.traverse((child) => {
+                if (child.isMesh && child.material) {
+                    if (child.material.metalness !== undefined) child.material.metalness = 0.1;
+                    if (child.material.roughness !== undefined) child.material.roughness = 0.8;
+                }
+            });
+
             // Auto-scale the model so it fits perfectly on the globe
             const box = new THREE.Box3().setFromObject(model);
             const size = box.getSize(new THREE.Vector3());
@@ -328,9 +362,10 @@ export async function initSatellites(scene, cam, ren) {
         }
     }
 
-    const results = await Promise.allSettled(
-        SATELLITES.map((cfg) => fetchTLE(cfg.id).then((tle) => ({ cfg, tle })))
-    );
+    const singleReqs = SATELLITES.filter(c => c.id).map(cfg => fetchTLE(cfg.id).then(tle => ({ cfg, tles: [tle] })));
+    const groupReqs = SATELLITES.filter(c => c.group).map(cfg => fetchGroupTLE(cfg.group).then(tles => ({ cfg, tles })));
+
+    const results = await Promise.allSettled([...singleReqs, ...groupReqs]);
 
     for (const result of results) {
         if (result.status === "rejected") {
@@ -338,30 +373,34 @@ export async function initSatellites(scene, cam, ren) {
             continue;
         }
 
-        const { cfg, tle } = result.value;
-        try {
-            const satrec = satellite.twoline2satrec(tle.tle1, tle.tle2);
-            let mesh;
+        const { cfg, tles } = result.value;
+        for (const tle of tles) {
+            try {
+                const satrec = satellite.twoline2satrec(tle.tle1, tle.tle2);
+                let mesh;
 
-            if (cfg.model && loadedModels[cfg.model]) {
-                mesh = loadedModels[cfg.model].clone();
-            } else {
-                // Original colored sphere fallback
-                mesh = new THREE.Mesh(
-                    new THREE.SphereGeometry(cfg.size, 8, 8),
-                    new THREE.MeshBasicMaterial({ color: cfg.color })
-                );
+                if (cfg.model && loadedModels[cfg.model]) {
+                    mesh = loadedModels[cfg.model].clone();
+                } else {
+                    // Original colored sphere fallback
+                    mesh = new THREE.Mesh(
+                        new THREE.SphereGeometry(cfg.size, 8, 8),
+                        new THREE.MeshBasicMaterial({ color: cfg.color })
+                    );
+                }
+
+                mesh.visible = false;
+                scene.add(mesh);
+                const resolvedName = cfg.group ? tle.name : cfg.name;
+                const resolvedCrew = cfg.name === "ISS" ? liveCrewData.ISS : (cfg.name === "CSS (Tiangong)" ? liveCrewData.CSS : cfg.crew);
+                satRecords.push({ satrec, name: resolvedName, color: cfg.color, link: cfg.link, image: cfg.image, rotation: cfg.rotation, liveLink: cfg.liveLink, liveLinkLabel: cfg.liveLinkLabel, crew: resolvedCrew });
+                satMeshes.push(mesh);
+            } catch (err) {
+                console.warn(`[satellites] Bad TLE for ${cfg.name || cfg.group}:`, err.message);
             }
-
-            mesh.visible = false;
-            scene.add(mesh);
-            const resolvedCrew = cfg.name === "ISS" ? liveCrewData.ISS : (cfg.name === "CSS (Tiangong)" ? liveCrewData.CSS : cfg.crew);
-            satRecords.push({ satrec, name: cfg.name, color: cfg.color, link: cfg.link, image: cfg.image, rotation: cfg.rotation, liveLink: cfg.liveLink, liveLinkLabel: cfg.liveLinkLabel, crew: resolvedCrew });
-            satMeshes.push(mesh);
-            console.log(`[satellites] ✓ ${cfg.name}`);
-        } catch (err) {
-            console.warn(`[satellites] Bad TLE for ${cfg.name}:`, err.message);
         }
+        if (cfg.id) console.log(`[satellites] ✓ ${cfg.name}`);
+        else if (cfg.group) console.log(`[satellites] ✓ ${cfg.group} (${tles.length} satellites loaded)`);
     }
 
     console.log(`[satellites] Loaded ${satMeshes.length} / ${SATELLITES.length} satellites.`);
